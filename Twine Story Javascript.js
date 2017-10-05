@@ -1,4 +1,4 @@
-// via and thanks to https://furkleindustries.com/fictions/twine/twine2_resources/twine2_macros/
+// via https://furkleindustries.com/fictions/twine/twine2_resources/twine2_macros/
 
 var _state = State;
 window._state = _state;
@@ -27,8 +27,21 @@ window.setHarloweVariable = setHarloweVariable;
 
 var socket = new WebSocket("ws://"+window.location.hostname+":"+window.location.port+"/ws/game");
 
+window.sendHarloweVariable = function(variableToSend) {
+	var payload = {};
+	payload[''+variableToSend]=getHarloweVariable(variableToSend);
+	window.send(payload);
+}
+
 socket.onopen = function() {
-	socket.send("init");
+	window.socket = socket;
+	var send = function(dataToSend) {
+		console.log("sending",dataToSend);
+		socket.send(JSON.stringify(dataToSend));
+	}
+	window.send = send;
+	var payload = { init: "init"};
+	send(payload);
 }
 
 socket.onmessage = function (event) {
@@ -38,6 +51,7 @@ socket.onmessage = function (event) {
 		window.setHarloweVariable( key, msg[key] );
 	}
 }
+
 
 
 

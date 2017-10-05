@@ -1,0 +1,96 @@
+<tw-storydata name="ExternalData" startnode="4" creator="Twine" creator-version="2.1.3" ifid="68021349-4F3D-4BF3-821F-9998B445CBA5" format="Harlowe" format-version="2.0.1" options="" hidden><style role="stylesheet" id="twine-user-stylesheet" type="text/twine-css">
+
+
+
+
+
+
+</style><script role="script" id="twine-user-script" type="text/twine-javascript">// via https://furkleindustries.com/fictions/twine/twine2_resources/twine2_macros/
+
+var _state = State;
+window._state = _state;
+function getHarloweVariable(prop) {
+	if (typeof(prop) === typeof(undefined) ||
+			prop === '') {
+		return;
+	}	
+	return prop[0] === '$' ? 
+		_state.variables[prop.slice(1, prop.length)] : _state.variables[prop];
+}
+window.getHarloweVariable = getHarloweVariable;
+
+function setHarloweVariable(prop, val) {
+	if (typeof(prop) === typeof(undefined) ||
+			prop === '' ||
+			typeof(val) === typeof(undefined)) {
+		return; 
+	}
+	if (prop[0] === '$') {
+		prop = prop.slice(1, prop.length);  
+	}
+	_state.variables[prop] = val;
+}
+window.setHarloweVariable = setHarloweVariable;
+
+var socket = new WebSocket("ws://"+window.location.hostname+":"+window.location.port+"/ws/game");
+
+window.sendHarloweVariable = function(variableToSend) {
+	var payload = {};
+	payload[''+variableToSend]=getHarloweVariable(variableToSend);
+	window.send(payload);
+}
+
+socket.onopen = function() {
+	window.socket = socket;
+	var send = function(dataToSend) {
+		console.log("sending",dataToSend);
+		socket.send(JSON.stringify(dataToSend));
+	}
+	window.send = send;
+	var payload = { init: "init"};
+	send(payload);
+}
+
+socket.onmessage = function (event) {
+	console.log(event);
+	var msg = JSON.parse(event.data);
+	for (var key in msg) {
+		window.setHarloweVariable( key, msg[key] );
+	}
+}
+
+
+
+
+
+
+
+</script><tw-passagedata pid="1" name="Start" tags="" position="418,197">The temperature is $temperature.
+
+It is (if: $temperature&gt;10)[ [[Hot-&gt;Hot]] ](if: $temperature&lt;=10)[ [[Cold-&gt;Cold]] ]
+
+[[Check temperature again!-&gt;Start]]
+
+[Push this temperature to Node-red]&lt;sendTemperature|(click:?sendTemperature)[	
+	(set: $emptyExpression to window.sendHarloweVariable(&#x27;temperature&#x27;))[Sent &#x27;$temperature&#x27; back up the socket!]
+]
+
+Alternately: Do you prefer [soy milk]&lt;sendSoy|(click:?sendSoy)[
+(set: $milk to &quot;soy&quot;)(set: $emptyExpression to window.sendHarloweVariable(&#x27;milk&#x27;))] or [almond milk]&lt;sendAlmond|(click:?sendAlmond)[
+(set: $milk to &quot;almond&quot;)(set: $emptyExpression to window.sendHarloweVariable(&#x27;milk&#x27;))]?
+
+(if: $milk is not &quot;&quot;)[Apparently, you like $milk milk.]</tw-passagedata><tw-passagedata pid="2" name="Hot" tags="" position="601,313">Weather is hot.
+
+[[start-&gt;Start]]</tw-passagedata><tw-passagedata pid="3" name="Cold" tags="" position="139,296">Weather is cold.
+
+[[start-&gt;Start]]</tw-passagedata><tw-passagedata pid="4" name="Title" tags="" position="416,30">This is the title page.
+
+It is needed so data can be initialised before the player starts.
+
+[[Start the game!-&gt;Start]]
+
+(set:$milk to &quot;&quot;)</tw-passagedata><tw-passagedata pid="5" name="Soy Milk" tags="" position="418,347">You chose badly, my friend.
+
+Soy milk tastes odd. Enjoy almond milk, while we still enjoy the company of bees.
+
+[[start-&gt;Start]]</tw-passagedata></tw-storydata>
